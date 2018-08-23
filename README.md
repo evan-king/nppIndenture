@@ -1,16 +1,16 @@
-# nppIndenture
+# Indenture
 
 [![version][version-img]][version-url]
 [![mit license][license-img]][license-url]
 [![build status][appveyor-img]][appveyor-url]
 
-nppIndenture is a [Notepad++](https://notepad-plus-plus.org/) plugin that detects
+Indenture is a [Notepad++](https://notepad-plus-plus.org/) plugin that detects
 indentation used for each file opened and automatically configures Notepad++ to
 match.  Supported options are tabs and 2 to 8 spaces.
 
 ## Download
 
-[Latest version](https://github.com/evan-king/nppIndenture/releases/download/1.0/nppIndenture-1.0.zip) (x86 & x64 included)
+[Latest version](https://github.com/evan-king/nppIndenture/releases/download/v1.0/nppIndenture-1.0.zip) (x86 & x64 included)
 
 ## Installation
 
