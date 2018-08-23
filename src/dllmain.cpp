@@ -1,8 +1,11 @@
 /*
-*  Chocobo1/nppAutoDetectIndent
+*  evan-king/nppIndenture
 *
 *   Copyright 2017-2018 by Mike Tzou (Chocobo1)
 *     https://github.com/Chocobo1/nppAutoDetectIndent
+*
+*   Copyright 2018 by Evan King (evan-king)
+*     https://github.com/evan-king/nppIndenture
 *
 *   Licensed under GNU General Public License 3 or later.
 *
@@ -10,28 +13,24 @@
 */
 
 #include "stdafx.h"
-#include "nppAutoDetectIndent.h"
+#include "nppIndenture.h"
 #include "settings.h"
 
-#ifdef NPPAUTODETECTINDENT_EXPORTS
-#define NPPAUTODETECTINDENT_API __declspec(dllexport)
+#ifdef NPPINDENTURE_EXPORTS
+#define NPPINDENTURE_API __declspec(dllexport)
 #else
-#define NPPAUTODETECTINDENT_API __declspec(dllimport)
+#define NPPINDENTURE_API __declspec(dllimport)
 #endif
 
-BOOL WINAPI DllMain(HANDLE /*hinstDLL*/, DWORD fdwReason, LPVOID /*lpvReserved*/)
-{
-	switch (fdwReason)
-	{
-		case DLL_PROCESS_ATTACH:
-		{
+BOOL WINAPI DllMain(HANDLE /*hinstDLL*/, DWORD fdwReason, LPVOID /*lpvReserved*/) {
+	switch(fdwReason) {
+		case DLL_PROCESS_ATTACH: {
 			MyPlugin::initInstance();
 			Settings::initInstance();
 			break;
 		}
 
-		case DLL_PROCESS_DETACH:
-		{
+		case DLL_PROCESS_DETACH: {
 			MyPlugin::freeInstance();
 			Settings::freeInstance();
 			break;
@@ -46,73 +45,63 @@ BOOL WINAPI DllMain(HANDLE /*hinstDLL*/, DWORD fdwReason, LPVOID /*lpvReserved*/
 	return TRUE;
 }
 
-extern "C" NPPAUTODETECTINDENT_API const TCHAR * getName()
-{
+extern "C" NPPINDENTURE_API const TCHAR * getName() {
 	return MyPlugin::instance()->PLUGIN_NAME;
 }
 
-extern "C" NPPAUTODETECTINDENT_API void setInfo(const NppData data)
-{
+extern "C" NPPINDENTURE_API void setInfo(const NppData data) {
 	MyPlugin::instance()->setupNppData(data);
 }
 
-extern "C" NPPAUTODETECTINDENT_API FuncItem * getFuncsArray(int * const funcCount)
-{
+extern "C" NPPINDENTURE_API FuncItem * getFuncsArray(int * const funcCount) {
 	const MyPlugin *plugin = MyPlugin::instance();
 	*funcCount = static_cast<int>(plugin->m_funcItems.size());
 	return const_cast<FuncItem *>(plugin->m_funcItems.data());
 }
 
-extern "C" NPPAUTODETECTINDENT_API void beNotified(SCNotification *notifyCode)
-{
+extern "C" NPPINDENTURE_API void beNotified(SCNotification *notifyCode) {
 	MyPlugin * const myPlugin = MyPlugin::instance();
-	nppAutoDetectIndent::IndentCache &indentCache = myPlugin->indentCache;
-	switch (notifyCode->nmhdr.code)
-	{
-		case NPPN_READY:
-		{
-			myPlugin->nppOriginalSettings = nppAutoDetectIndent::detectNppSettings();
+	nppIndenture::IndentCache &indentCache = myPlugin->indentCache;
+	switch(notifyCode->nmhdr.code) {
+		case NPPN_READY: {
+			myPlugin->nppOriginalSettings = nppIndenture::detectNppSettings();
 			break;
 		}
 
-		case NPPN_FILECLOSED:
-		{
+		case NPPN_FILECLOSED: {
 			const uptr_t id = notifyCode->nmhdr.idFrom;
 
 			indentCache.erase(id);
 			break;
 		}
 
-		case NPPN_BUFFERACTIVATED:
-		{
-			if (Settings::instance()->getDisablePlugin())
-				break;
+		case NPPN_BUFFERACTIVATED: {
+			if(Settings::instance()->getDisablePlugin()) break;
 
 			const uptr_t id = notifyCode->nmhdr.idFrom;
 
 			const auto iter = indentCache.find(id);
-			const nppAutoDetectIndent::IndentInfo info = (iter != indentCache.end()) ? iter->second : nppAutoDetectIndent::detectIndentInfo();
+			const nppIndenture::IndentInfo info = (iter != indentCache.end())
+				? iter->second
+				: nppIndenture::detectIndentInfo();
 
 			indentCache[id] = info;
 			applyIndentInfo(info);
 			break;
 		}
 
-		default:
-		{
+		default: {
 			break;
 		}
 	}
 }
 
-extern "C" NPPAUTODETECTINDENT_API LRESULT messageProc(UINT /*Message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
+extern "C" NPPINDENTURE_API LRESULT messageProc(UINT /*Message*/, WPARAM /*wParam*/, LPARAM /*lParam*/) {
 	return TRUE;
 }
 
 #ifdef UNICODE
-extern "C" NPPAUTODETECTINDENT_API BOOL isUnicode()
-{
+extern "C" NPPINDENTURE_API BOOL isUnicode() {
 	return TRUE;
 }
 #endif // UNICODE

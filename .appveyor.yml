@@ -31,7 +31,7 @@ os: Visual Studio 2017
 environment:
   REPO_DIR: &REPO_DIR c:\project  # directory created by appveyor
 
-  SOL_FILE: nppAutoDetectIndent.sln
+  SOL_FILE: nppIndenture.sln
   MSBUILD_CMD_X86: /maxcpucount /property:Configuration=Release,Platform=x86
   MSBUILD_CMD_X64: /maxcpucount /property:Configuration=Release,Platform=x64
 
@@ -58,10 +58,10 @@ build_script:
 after_build:
   - cd "%REPO_DIR%"
   - mkdir "x86" "x64"
-  - copy "src\Release\nppAutoDetectIndent.dll" "x86"
-  - copy "src\x64\Release\nppAutoDetectIndent.dll" "x64"
-  - 7z a -mx9 "nppAutoDetectIndent.7z" "x86" "x64"
-  - 'powershell -Command "& { $hash = (Get-FileHash -Algorithm SHA256 "nppAutoDetectIndent.7z").hash.ToString().toLower(); Write-Host $hash " *nppAutoDetectIndent.7z"; }" > "nppAutoDetectIndent.7z.sha256"'
+  - copy "src\Release\nppIndenture.dll" "x86"
+  - copy "src\x64\Release\nppIndenture.dll" "x64"
+  - 7z a -mx9 "nppIndenture.7z" "x86" "x64"
+  - 'powershell -Command "& { $hash = (Get-FileHash -Algorithm SHA256 "nppIndenture.7z").hash.ToString().toLower(); Write-Host $hash " *nppIndenture.7z"; }" > "nppIndenture.7z.sha256"'
 
 #---------------------------------#
 #  tests configuration            #
@@ -76,7 +76,7 @@ test: off
 #---------------------------------#
 
 artifacts:
-  - path: nppAutoDetectIndent.7z
+  - path: nppIndenture.7z
     name: plugin
-  - path: nppAutoDetectIndent.7z.sha256
+  - path: nppIndenture.7z.sha256
     name: checksum

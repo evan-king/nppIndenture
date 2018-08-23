@@ -1,8 +1,11 @@
 /*
-*  Chocobo1/nppAutoDetectIndent
+*  evan-king/nppIndenture
 *
-*   Copyright 2018 by Mike Tzou (Chocobo1)
+*   Copyright 2017-2018 by Mike Tzou(Chocobo1)
 *     https://github.com/Chocobo1/nppAutoDetectIndent
+*
+*   Copyright 2018 by Evan King(evan-king)
+*     https://github.com/evan-king/nppIndenture
 *
 *   Licensed under GNU General Public License 3 or later.
 *
@@ -13,29 +16,23 @@
 
 Settings *Settings::m_instance = nullptr;
 
-void Settings::initInstance()
-{
-	if (!m_instance)
-		m_instance = new Settings;
+void Settings::initInstance() {
+	if (!m_instance) m_instance = new Settings;
 }
 
-void Settings::freeInstance()
-{
+void Settings::freeInstance() {
 	delete m_instance;
 	m_instance = nullptr;
 }
 
-Settings* Settings::instance()
-{
+Settings* Settings::instance() {
 	return m_instance;
 }
 
-bool Settings::getDisablePlugin() const
-{
+bool Settings::getDisablePlugin() const {
 	return m_disablePlugin;
 }
 
-void Settings::setDisablePlugin(const bool value)
-{
+void Settings::setDisablePlugin(const bool value) {
 	m_disablePlugin = value;
 }
