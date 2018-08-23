@@ -16,8 +16,8 @@ match.  Supported options are tabs and 2 to 8 spaces.
 
 Extract the appropriate version of `nppIndenture.dll` (x86 or x64) into the appropriate
 `plugin` folder:
- - For 32bit: extract `x86/nppIndenture.dll` into `%ProgramFiles(x86)%\Notepad++\plugins`.
- - For 64bit: extract `x64/nppIndenture.dll` into `%ProgramFiles%\Notepad++\plugins`.
+ - For 32bit: extract from `x86` into `%ProgramFiles(x86)%\Notepad++\plugins`.
+ - For 64bit: extract from `x64` into `%ProgramFiles%\Notepad++\plugins`.
  - If user plugins enabled and installing per-user, change the destination to `%APPDATA%\Notepad++\plugins`.
 
 ## See Also
@@ -28,14 +28,14 @@ per the file-specific configuration.
 
 ## Background
 
-This plugin is forked from Chocobo1's nppAutoDetectIndent](https://github.com/Chocobo1/nppAutoDetectIndent).
-The original plugin struggles (more) with files containing few lines only indented
-once, block comments that cascade lines one space further, and other content errors
-or inconsistencies.
+This plugin is forked from [nppAutoDetectIndent](https://github.com/Chocobo1/nppAutoDetectIndent)
+by Chocobo1.  The original plugin struggles (more) with space-indented files containing
+few lines only indented once, block comments that cascade lines one space further,
+and other content errors or inconsistencies.
 
-When the original author would not recognize the problem, it became more expedient
-to maintain an independent fork, which is now renamed to prevent future confusion
-between the two.
+When the original author would not readily recognize the problem, it became more
+expedient to maintain an independent fork, which is now renamed to prevent future
+confusion between the two.
 
 [version-url]: https://github.com/evan-king/nppIndenture/releases
 [version-img]: https://img.shields.io/github/release/evan-king/nppIndenture.svg?style=flat

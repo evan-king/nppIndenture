@@ -23,39 +23,47 @@
 
 #include "settings.h"
 
-#define PLUGIN_VERSION "1.1"
+#define PLUGIN_VERSION "1.0"
 
 namespace {
 	const int MAX_LINES = 5000;
-	const int MAX_INDENTS = (80 * 2 / 3) + 1;  // 2/3 of 80-width screen
+
+	const int MIN_INDENT = 2; // minimum width of a single indentation
+	const int MAX_INDENT = 8; // maximum width of a single indentation
+
+	const int MIN_DEPTH = MIN_INDENT; // ignore lines below this indentation level
+	const int MAX_DEPTH = 3*MAX_INDENT; // ignore lines beyond this indentation level
+	
+	// % of lines allowed to contradict indentation option without penalty
+	const float GRACE_FREQUENCY = 1/50.0;
 
 	struct ParseResult {
-		int tabCount = 0;
-		int spaceTotal = 0;
-		std::array<int, MAX_INDENTS> spaceCount {};
+		int num_tab_lines = 0;
+		int num_space_lines = 0;
+		float grace = 0.0;
+		
+		// indentation => count(lines of that exact indentation)
+		int depth_counts[MAX_DEPTH+1] = {0};
 	};
 
 	ParseResult parseDocument() {
 		const auto sci = MyPlugin::instance()->message()->getSciCallFunctor();
 		ParseResult result;
 
-		const int lines = std::min(sci.call<int>(SCI_GETLINECOUNT), MAX_LINES);
-		for(int i = 0; i < lines; ++i) {
-			const int indentWidth = sci.call<int>(SCI_GETLINEINDENTATION, i);
-			//if(indentWidth < 2)
-				//continue;
-			if(indentWidth > MAX_INDENTS)  // over MAX_INDENTS, this line must be for alignment, skip it
-				continue;
+		const int num_lines = std::min(sci.call<int>(SCI_GETLINECOUNT), MAX_LINES);
+		result.grace = float(num_lines) * GRACE_FREQUENCY;
+		for(int i = 0; i < num_lines; ++i) {
+			const int depth = sci.call<int>(SCI_GETLINEINDENTATION, i);
+			if(depth < MIN_DEPTH || depth > MAX_DEPTH) continue;
 
 			const int pos = sci.call<int>(SCI_POSITIONFROMLINE, i);
 			const char lineHeadChar = sci.call<char>(SCI_GETCHARAT, pos);
 
-			if(lineHeadChar == '\t')
-				++result.tabCount;
+			if(lineHeadChar == '\t') result.num_tab_lines++;
 
 			if(lineHeadChar == ' ') {
-				++result.spaceTotal;
-				++result.spaceCount[indentWidth];
+				result.num_space_lines++;
+				result.depth_counts[depth]++;
 			}
 		}
 
@@ -111,11 +119,11 @@ namespace nppIndenture {
 		IndentInfo info;
 
 		// decide `type`
-		if((result.tabCount == 0) &&(result.spaceTotal == 0))
+		if(result.num_tab_lines + result.num_space_lines == 0)
 			info.type = IndentInfo::IndentType::Invalid;
-		else if(result.spaceTotal >(result.tabCount * 4))
+		else if(result.num_space_lines > (result.num_tab_lines * 4))
 			info.type = IndentInfo::IndentType::Space;
-		else if(result.tabCount >(result.spaceTotal * 4))
+		else if(result.num_tab_lines > (result.num_space_lines * 4))
 			info.type = IndentInfo::IndentType::Tab;
 		/*else
 		{
@@ -126,22 +134,25 @@ namespace nppIndenture {
 
 		// decide `num`
 		if(info.type == IndentInfo::IndentType::Space) {
-			decltype(ParseResult::spaceCount) tempCount {};
-
-			for(int i = 1; i < result.spaceCount.size(); ++i) {
-				for(int k = 1; k <= i; ++k) {
-					if((i % k) == 0) tempCount[k] += result.spaceCount[i];
+			
+			// indent size => count(space-indented lines with incompatible indentation)
+			int margins[MAX_INDENT+1] = {0};
+			
+			// for each depth option, count the incompatible lines
+			for(int i = MIN_DEPTH; i <= MAX_DEPTH; i++) {
+				for(int k = MIN_INDENT; k <= MAX_INDENT; k++) {
+					if(i % k == 0) continue;
+					margins[k] += result.depth_counts[i];
 				}
 			}
 
-			int which = 0;
-			int weight = 0;
-			for(int i =(static_cast<int>(tempCount.size()) - 1); i >= 0; --i)  // give big indents higher chance
-			{
-				if(tempCount[i] >(weight * 3 / 2)) {
-					weight = tempCount[i];
-					which = i;
-				}
+			// choose the last indent with the smallest margin (ties go to larger indent)
+			// Considers margins within grace of zero as =zero,
+			// so occasional typos don't force smaller indentation
+			int which = MIN_INDENT;
+			for(int i = MIN_INDENT; i <= MAX_INDENT; ++i) {
+				if(result.depth_counts[i] == 0) continue;
+				if(margins[i] <= margins[which] || margins[i] < result.grace) which = i;
 			}
 
 			info.num = which;
@@ -206,7 +217,7 @@ MyPlugin::MyPlugin()
 		{TEXT("Disable plugin"), MenuAction::selectDisablePlugin},
 		{TEXT("---"), nullptr},
 		{TEXT("Version: " PLUGIN_VERSION), MenuAction::doNothing},
-		{TEXT("Goto website..."), MenuAction::gotoWebsite}
+		{TEXT("Home page..."), MenuAction::gotoWebsite}
 	}}
 {
 }
